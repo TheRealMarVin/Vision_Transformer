@@ -12,6 +12,7 @@ import numpy as np
 
 from torchvision import transforms
 
+from models.vit import ViT
 from train_eval.eval import evaluate
 from train_eval.training import train
 
@@ -19,6 +20,12 @@ from train_eval.training import train
 def get_mnist_sets(train_transform, test_transform):
     train_set = torchvision.datasets.MNIST(root="./data", train=True, download=True, transform=train_transform)
     test_set = torchvision.datasets.MNIST(root="./data", train=False, download=True, transform=test_transform)
+    return train_set, test_set
+
+def get_cifar10_sets(train_transform, test_transform):
+    train_set = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=train_transform)
+    test_set = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=test_transform)
+
     return train_set, test_set
 
 
@@ -29,9 +36,9 @@ def run_specific_experiment(summary, model):
 
     model_name = "mlp_mixer"
 
-    w.add_hparams({"learning rate": learning_rate,
-                   "batch size": batch_size,
-                   "max epochs": n_epochs})
+    summary.add_hparams({"learning rate": learning_rate,
+                         "batch size": batch_size,
+                         "max epochs": n_epochs}, {})
 
     out_folder = "models/{}".format(model_name)
     if not path.exists(out_folder):
@@ -47,7 +54,8 @@ def run_specific_experiment(summary, model):
     test_transform = transforms.Compose([transforms.ToTensor(),
                                          transforms.Normalize((0.1307,), (0.3081,))])
 
-    train_set, test_set = get_mnist_sets(train_transform, test_transform)
+    # train_set, test_set = get_mnist_sets(train_transform, test_transform)
+    train_set, test_set = get_cifar10_sets(train_transform, test_transform)
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=4)
 
     if torch.cuda.is_available():
@@ -78,6 +86,8 @@ def run_specific_experiment(summary, model):
 
 def main_vit():
     summary = SummaryWriter()
+    model = ViT(patch_size=8)
+    run_specific_experiment(summary, model)
     summary.close()
 
 

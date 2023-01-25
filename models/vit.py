@@ -7,12 +7,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class ViT(nn.Module):
-    def __init__(self, img_size, patch_size, nb_output):
+    def __init__(self, img_size, patch_size, patch_hidden_size, nb_output, group_channel):
         super(ViT, self).__init__()
 
         self.img_size = img_size
         self.patch_size = self._make_tuple(patch_size)
-        self.group_channel_in_patch = True
+        self.patch_hidden_size = patch_hidden_size
+        self.group_channel_in_patch = group_channel
 
         patch_count = (self.img_size[1] * self.img_size[2]) / (self.patch_size[0] * self.patch_size[1])
         if self.group_channel_in_patch:
@@ -24,11 +25,18 @@ class ViT(nn.Module):
         self.patch_count = int(patch_count)
         self.patch_dimension = patch_dimension
 
-        self.fc = nn.Linear(self.patch_dimension, nb_output)
+        self.patch_fc = nn.Linear(self.patch_dimension, self.patch_hidden_size)
+        self.v_class = nn.Parameter(torch.rand(1, patch_hidden_size))
+
+        self.fc = nn.Linear(400, nb_output) # 392 is just to have something that will run
 
     def forward(self, x):
         patches = self._create_patch(x)
-        out = self.fc(patches)
+        out = self.patch_fc(patches)
+        out = torch.stack([torch.vstack((self.v_class, t)) for t in out])
+        out = out.view(out.size(0), -1)
+        out = self.fc(out)
+
         return out
 
     def _make_tuple(self, val):

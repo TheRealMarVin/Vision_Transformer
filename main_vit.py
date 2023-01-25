@@ -54,8 +54,8 @@ def run_specific_experiment(summary, model):
     test_transform = transforms.Compose([transforms.ToTensor(),
                                          transforms.Normalize((0.1307,), (0.3081,))])
 
-    # train_set, test_set = get_mnist_sets(train_transform, test_transform)
-    train_set, test_set = get_cifar10_sets(train_transform, test_transform)
+    train_set, test_set = get_mnist_sets(train_transform, test_transform)
+    # train_set, test_set = get_cifar10_sets(train_transform, test_transform)
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=4)
 
     if torch.cuda.is_available():
@@ -86,7 +86,11 @@ def run_specific_experiment(summary, model):
 
 def main_vit():
     summary = SummaryWriter()
-    model = ViT(img_size=(3, 32, 32), patch_size=8, nb_output=10)
+    model = ViT(img_size=(1, 28, 28),
+                patch_size=(4,4),
+                patch_hidden_size=8,
+                nb_output=10,
+                group_channel=False)
     run_specific_experiment(summary, model)
     summary.close()
 

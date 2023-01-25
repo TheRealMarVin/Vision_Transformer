@@ -86,7 +86,7 @@ def run_specific_experiment(summary, model):
 
 def main_vit():
     summary = SummaryWriter()
-    model = ViT(img_size=(3, 32, 32), patch_size=8)
+    model = ViT(img_size=(3, 32, 32), patch_size=8, nb_output=10)
     run_specific_experiment(summary, model)
     summary.close()
 

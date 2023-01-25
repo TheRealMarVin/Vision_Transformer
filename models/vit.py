@@ -9,6 +9,7 @@ class ViT(nn.Module):
         super(ViT, self).__init__()
 
         self.patch_size = self._make_tuple(patch_size)
+        self.group_channel_in_patch = True
         # self.image_input_size = self._make_tuple(image_input_size)
 
         self.fc = nn.Linear(10, 10)
@@ -31,7 +32,9 @@ class ViT(nn.Module):
         # plt.show()
 
         shape = x.shape
-        patch_count = (shape[-1] * shape[-2]  * shape[-3]) / (self.patch_size[0] * self.patch_size[1])
+        patch_count = (shape[-2] * shape[-1]) / (self.patch_size[0] * self.patch_size[1])
+        if not self.group_channel_in_patch:
+            patch_count = patch_count * shape[-3]
 
         # unfold channels
         x = x.data.unfold(dimension=1, size=shape[1], step=shape[1])
@@ -40,7 +43,9 @@ class ViT(nn.Module):
         # unfold height
         x = x.data.unfold(dimension=3, size=self.patch_size[1], step=self.patch_size[1])
 
-        # reshape to [batch_size, patch_count, patch_size*patch_size]
-        x = x.reshape(shape[0], int(patch_count), self.patch_size[0] * self.patch_size[1])
+        if self.group_channel_in_patch:
+            x = x.reshape(shape[0], int(patch_count), shape[1] * self.patch_size[0] * self.patch_size[1])
+        else:
+            x = x.reshape(shape[0], int(patch_count), self.patch_size[0] * self.patch_size[1])
 
         return x

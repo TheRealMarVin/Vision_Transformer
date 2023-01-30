@@ -29,13 +29,20 @@ class ViT(nn.Module):
 
         # Patch embeddings layer and position embeddings
         self.patch_fc = nn.Linear(self.patch_dimension, self.patch_embedding_size)
-        self.register_buffer('positional_embeddings', self._create_positional_embedding(), persistent=False)
+        self.register_buffer('positional_embeddings', self._positional_encoding(), persistent=False)
 
-        # v_class parameter
+        # v_class parameters
         self.v_class = nn.Parameter(torch.rand(1, patch_hidden_size))
 
         # temp
-        self.fc = nn.Linear(400, nb_output) # 400 is just to have something that will run
+
+        bb = self._positional_encoding(512, 2048)
+        plt.pcolormesh(bb.T, cmap='RdBu')
+        plt.ylabel('Depth')
+        plt.xlabel('Position')
+        plt.colorbar()
+        plt.show()
+        self.fc = nn.Linear(400, nb_output)  # 400 is just to have something that will run
 
     def forward(self, x):
         # Create Patches
@@ -65,6 +72,7 @@ class ViT(nn.Module):
         return res
 
     def _create_positional_embedding(self):
+        # comes from the tutorial, but I don't think it is right
         results = torch.ones(self.patch_count + 1, self.patch_embedding_size)
         for i in range(self.patch_count + 1):
             for j in range(self.patch_embedding_size):
@@ -75,6 +83,21 @@ class ViT(nn.Module):
 
                 results[i][j] = embedding
         return results
+
+    def _positional_encoding(self, length, depth):
+        depth = depth / 2
+
+        positions = np.arange(length)[:, np.newaxis]  # (seq, 1)
+        depths = np.arange(depth)[np.newaxis, :] / depth  # (1, depth)
+
+        angle_rates = 1 / (10000 ** depths)  # (1, depth)
+        angle_rads = positions * angle_rates  # (pos, depth)
+
+        pos_encoding = np.concatenate(
+            [np.sin(angle_rads), np.cos(angle_rads)],
+            axis=-1)
+
+        return pos_encoding
 
     def _create_patch(self, x):
         # unfold channels

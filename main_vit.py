@@ -30,17 +30,17 @@ def get_cifar10_sets(train_transform, test_transform):
 
 
 def run_specific_experiment(summary, model):
-    n_epochs = 200
-    batch_size = 64
+    n_epochs = 5
+    batch_size = 128
     learning_rate = 0.00005
 
-    model_name = "mlp_mixer"
+    model_name = "ViT"
 
     summary.add_hparams({"learning rate": learning_rate,
                          "batch size": batch_size,
                          "max epochs": n_epochs}, {})
 
-    out_folder = "models/{}".format(model_name)
+    out_folder = "saved_models/{}".format(model_name)
     if not path.exists(out_folder):
         os.makedirs(out_folder)
 
@@ -90,7 +90,8 @@ def main_vit():
                 patch_size=(4,4),
                 patch_hidden_size=8,
                 nb_output=10,
-                group_channel=False)
+                group_channel=False,
+                nb_encoder_blocks=6)
     run_specific_experiment(summary, model)
     summary.close()
 

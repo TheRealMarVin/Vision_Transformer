@@ -31,7 +31,7 @@ def train(model, train_dataset, optimizer,
         delta_time = timedelta(seconds=(end_time - start_time))
 
         if validation_metrics["loss"] < best_valid_loss:
-            best_valid_loss = validation_metrics
+            best_valid_loss = validation_metrics["loss"]
             if save_file is not None:
                 torch.save(model, save_file)
 

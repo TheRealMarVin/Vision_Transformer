@@ -3,6 +3,7 @@ from datetime import timedelta
 import torch
 import time
 
+from helpers.metrics_helpers import arg_max_accuracy
 from train_eval.eval import evaluate
 
 
@@ -19,28 +20,29 @@ def train(model, train_dataset, optimizer,
         train_iterator = torch.utils.data.DataLoader(x, batch_size=batch_size, num_workers=4, shuffle=shuffle)
         valid_iterator = torch.utils.data.DataLoader(y, batch_size=batch_size, num_workers=4, shuffle=shuffle)
 
-        metrics = {"loss": criterion}
+        metrics = {"loss": criterion, "acc": arg_max_accuracy}
         train_loss = train_epoch(model, train_iterator, optimizer, criterion, true_index=true_index)
-        _, _, valid_metrics = evaluate(model, valid_iterator, metrics, true_index=true_index)
+        _, _, validation_metrics = evaluate(model, valid_iterator, metrics, true_index=true_index)
         if scheduler is not None:
-            scheduler.step(valid_metrics["loss"])
+            scheduler.step(validation_metrics["loss"])
 
         end_time = time.time()
 
         delta_time = timedelta(seconds=(end_time - start_time))
 
-        if valid_metrics["loss"] < best_valid_loss:
-            best_valid_loss = valid_metrics
+        if validation_metrics["loss"] < best_valid_loss:
+            best_valid_loss = validation_metrics
             if save_file is not None:
                 torch.save(model, save_file)
 
-        print("Current Epoch: {} -> train_eval time: {}\n\tTrain Loss: {:.3f} - Validation Loss: {:.3f}".format(epoch + 1, delta_time, train_loss, valid_metrics["loss"]))
-        summary.add_scalar("Loss/train", train_loss, epoch + 1)
-        summary.add_scalar("Loss/validation", valid_metrics["loss"], epoch + 1)
+        validation_str = metrics_to_string(validation_metrics, "val")
+        print("Current Epoch: {} -> train_eval time: {}\n\tTrain Loss: {:.3f} - {}".format(epoch + 1, delta_time, train_loss, validation_str))
+        summary.add_scalar("Loss/train", train_loss, epoch)
+        log_metrics_in_tensorboard(summary, validation_metrics, epoch, "val")
         summary.flush()
 
         if early_stop is not None:
-            if early_stop.should_stop(valid_metrics):
+            if early_stop.should_stop(validation_metrics):
                 break
 
     return best_valid_loss
@@ -74,3 +76,16 @@ def train_epoch(model, iterator, optimizer, criterion, true_index = 1):
         epoch_loss += loss.item()
 
     return epoch_loss / len(iterator)
+
+
+def log_metrics_in_tensorboard(summary, metrics, epoch, prefix):
+    for k, val in metrics.items():
+        summary.add_scalar("{}/{}".format(prefix, k), val, epoch + 1)
+
+
+def metrics_to_string(metrics, prefix):
+    res = []
+    for k, val in metrics.items():
+        res.append("{} {}:{:.3f}".format(prefix, k, val))
+
+    return " ".join(res)

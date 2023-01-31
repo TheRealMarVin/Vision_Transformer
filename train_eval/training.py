@@ -19,27 +19,28 @@ def train(model, train_dataset, optimizer,
         train_iterator = torch.utils.data.DataLoader(x, batch_size=batch_size, num_workers=4, shuffle=shuffle)
         valid_iterator = torch.utils.data.DataLoader(y, batch_size=batch_size, num_workers=4, shuffle=shuffle)
 
+        metrics = {"loss": criterion}
         train_loss = train_epoch(model, train_iterator, optimizer, criterion, true_index=true_index)
-        _, _, valid_loss = evaluate(model, valid_iterator, criterion, true_index=true_index)
+        _, _, valid_metrics = evaluate(model, valid_iterator, metrics, true_index=true_index)
         if scheduler is not None:
-            scheduler.step(valid_loss)
+            scheduler.step(valid_metrics["loss"])
 
         end_time = time.time()
 
         delta_time = timedelta(seconds=(end_time - start_time))
 
-        if valid_loss < best_valid_loss:
-            best_valid_loss = valid_loss
+        if valid_metrics["loss"] < best_valid_loss:
+            best_valid_loss = valid_metrics
             if save_file is not None:
                 torch.save(model, save_file)
 
-        print("Current Epoch: {} -> train_eval time: {}\n\tTrain Loss: {:.3f} - Validation Loss: {:.3f}".format(epoch + 1, delta_time, train_loss, valid_loss))
+        print("Current Epoch: {} -> train_eval time: {}\n\tTrain Loss: {:.3f} - Validation Loss: {:.3f}".format(epoch + 1, delta_time, train_loss, valid_metrics["loss"]))
         summary.add_scalar("Loss/train", train_loss, epoch + 1)
-        summary.add_scalar("Loss/train", valid_loss, epoch + 1)
+        summary.add_scalar("Loss/train", valid_metrics["loss"], epoch + 1)
         summary.flush()
 
         if early_stop is not None:
-            if early_stop.should_stop(valid_loss):
+            if early_stop.should_stop(valid_metrics):
                 break
 
     return best_valid_loss

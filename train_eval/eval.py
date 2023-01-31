@@ -14,10 +14,12 @@ def reshape_prediction_for_compatibility(raw_output):
     return np.array(reshaped_res)
 
 
-def evaluate(model, iterator, criterion, true_index = 1):
+def evaluate(model, iterator, metrics_dict, true_index = 1):
     model.eval()
 
-    epoch_loss = 0
+    metric_scores = {}
+    for k, _ in metrics_dict.items():
+        metric_scores[k] = 0
 
     with torch.no_grad():
         all_pred = []
@@ -36,7 +38,8 @@ def evaluate(model, iterator, criterion, true_index = 1):
                 y_true = y_true.cuda()
 
             y_pred = model(src)
-            loss = criterion(y_pred, y_true)
+            for k, metric in metrics_dict.items():
+                metric_scores[k] += metric(y_pred, y_true)
 
             if type(y_pred) is tuple:
                 y_pred, _ = y_pred
@@ -44,9 +47,10 @@ def evaluate(model, iterator, criterion, true_index = 1):
             all_pred.extend(y_pred.detach().cpu().numpy())
             all_true.extend(y_true.detach().cpu().numpy())
 
-            epoch_loss += loss.item()
+    for k, v in metric_scores.items():
+        metric_scores[k] = v / len(iterator)
 
-    return all_pred, all_true, epoch_loss / len(iterator)
+    return all_pred, all_true, metric_scores
 
 
 def convert_string(tokenizer, device, field, text):

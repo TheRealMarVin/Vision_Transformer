@@ -36,7 +36,7 @@ def train(model, train_dataset, optimizer,
 
         print("Current Epoch: {} -> train_eval time: {}\n\tTrain Loss: {:.3f} - Validation Loss: {:.3f}".format(epoch + 1, delta_time, train_loss, valid_metrics["loss"]))
         summary.add_scalar("Loss/train", train_loss, epoch + 1)
-        summary.add_scalar("Loss/train", valid_metrics["loss"], epoch + 1)
+        summary.add_scalar("Loss/validation", valid_metrics["loss"], epoch + 1)
         summary.flush()
 
         if early_stop is not None:

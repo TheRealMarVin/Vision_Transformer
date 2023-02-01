@@ -41,7 +41,7 @@ class ViT(nn.Module):
         for _ in range(nb_encoder_blocks):
             encoder_list.append(EncoderBlock(embedding_dim=self.patch_embedding_size,
                                              nb_embeddings=self.patch_count + 1,
-                                             nb_heads=4,
+                                             nb_heads=2,
                                              hidden_size=self.patch_dimension * 2))
 
         self.encoder_block = nn.ModuleList(encoder_list)

@@ -10,7 +10,13 @@ from models.encoder_block import EncoderBlock
 
 
 class ViT(nn.Module):
-    def __init__(self, img_size, patch_size, patch_hidden_size, nb_output, group_channel, nb_encoder_blocks):
+    def __init__(self, img_size,
+                 patch_size,
+                 patch_hidden_size,
+                 nb_output,
+                 group_channel,
+                 nb_encoder_blocks,
+                 nb_heads):
         super(ViT, self).__init__()
 
         self.img_size = img_size
@@ -41,8 +47,8 @@ class ViT(nn.Module):
         for _ in range(nb_encoder_blocks):
             encoder_list.append(EncoderBlock(embedding_dim=self.patch_embedding_size,
                                              nb_embeddings=self.patch_count + 1,
-                                             nb_heads=2,
-                                             hidden_size=self.patch_dimension * 2))
+                                             nb_heads=nb_heads,
+                                             hidden_size=self.patch_dimension * 4))
 
         self.encoder_block = nn.ModuleList(encoder_list)
 
@@ -55,7 +61,7 @@ class ViT(nn.Module):
         # plt.colorbar()
         # plt.show()
 
-        self.fc = nn.Linear(400, nb_output)  # 400 is just to have something that will run
+        self.fc = nn.Linear(((self.patch_count + 1) * self.patch_embedding_size), nb_output)  # 400 is just to have something that will run
 
     def forward(self, x):
         # Create Patches
@@ -102,17 +108,17 @@ class ViT(nn.Module):
         return results
 
     def _positional_encoding(self, patch_embedding_size, patch_count):
-        patch_count = patch_count / 2
+        half_patch_count = patch_count / 2
 
         positions = np.arange(patch_embedding_size)[:, np.newaxis]  # (seq, 1)
-        depths = np.arange(patch_count)[np.newaxis, :] / patch_count  # (1, depth)
+        depths = np.arange(half_patch_count)[np.newaxis, :] / half_patch_count  # (1, depth)
 
         angle_rates = 1 / (10000 ** depths)  # (1, depth)
         angle_rads = positions * angle_rates  # (pos, depth)
 
         pos_encoding = np.concatenate([np.sin(angle_rads), np.cos(angle_rads)], axis=-1)
 
-        return torch.Tensor(pos_encoding.T)
+        return torch.Tensor(pos_encoding.T[:patch_count, :])
 
     def _create_patch(self, x):
         # unfold channels

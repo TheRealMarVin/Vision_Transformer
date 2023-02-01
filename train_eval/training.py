@@ -21,7 +21,7 @@ def train(model, train_dataset, optimizer,
         valid_iterator = torch.utils.data.DataLoader(y, batch_size=batch_size, num_workers=4, shuffle=shuffle)
 
         metrics = {"loss": criterion, "acc": arg_max_accuracy}
-        train_loss = train_epoch(model, train_iterator, optimizer, criterion, true_index=true_index)
+        train_metrics = train_epoch(model, train_iterator, optimizer, criterion, metrics, true_index=true_index)
         _, _, validation_metrics = evaluate(model, valid_iterator, metrics, true_index=true_index)
         if scheduler is not None:
             scheduler.step(validation_metrics["loss"])
@@ -35,9 +35,11 @@ def train(model, train_dataset, optimizer,
             if save_file is not None:
                 torch.save(model, save_file)
 
+        header_str = "Current Epoch: {} -> train_eval time: {}".format(epoch + 1, delta_time)
+        train_str = metrics_to_string(train_metrics, "train")
         validation_str = metrics_to_string(validation_metrics, "val")
-        print("Current Epoch: {} -> train_eval time: {}\n\tTrain Loss: {:.3f} - {}".format(epoch + 1, delta_time, train_loss, validation_str))
-        summary.add_scalar("Loss/train", train_loss, epoch)
+        print("{}\n\t{} - {}".format(header_str, train_str, validation_str))
+        log_metrics_in_tensorboard(summary, train_metrics, epoch, "train")
         log_metrics_in_tensorboard(summary, validation_metrics, epoch, "val")
         summary.flush()
 
@@ -48,10 +50,12 @@ def train(model, train_dataset, optimizer,
     return best_valid_loss
 
 
-def train_epoch(model, iterator, optimizer, criterion, true_index = 1):
-    model.train()
+def train_epoch(model, iterator, optimizer, criterion, metrics_dict, true_index = 1):
+    metric_scores = {}
+    for k, _ in metrics_dict.items():
+        metric_scores[k] = 0
 
-    epoch_loss = 0
+    model.train()
 
     for i, batch in enumerate(iterator):
         src = batch[0]
@@ -71,11 +75,15 @@ def train_epoch(model, iterator, optimizer, criterion, true_index = 1):
         loss = criterion(y_pred, y_true)
 
         loss.backward()
-
         optimizer.step()
-        epoch_loss += loss.item()
 
-    return epoch_loss / len(iterator)
+        for k, metric in metrics_dict.items():
+            metric_scores[k] += metric(y_pred, y_true)
+
+    for k, v in metric_scores.items():
+        metric_scores[k] = v / len(iterator)
+
+    return metric_scores
 
 
 def log_metrics_in_tensorboard(summary, metrics, epoch, prefix):

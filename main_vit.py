@@ -89,11 +89,12 @@ def run_specific_experiment(summary, model):
 def main_vit():
     summary = SummaryWriter()
     model = ViT(img_size=(1, 28, 28),
-                patch_size=(4,4),
+                patch_size=(7,7),
                 patch_hidden_size=8,
                 nb_output=10,
                 group_channel=False,
-                nb_encoder_blocks=6)
+                nb_encoder_blocks=2,
+                nb_heads=2)
     run_specific_experiment(summary, model)
     summary.close()
 

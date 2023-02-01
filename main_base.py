@@ -20,19 +20,13 @@ from train_eval.eval import evaluate
 from train_eval.training import train
 
 
+def run_specific_experiment(summary, model, nb_epochs, batch_size, learning_rate):
+    model_name = model.__class__.__name__
 
-
-
-def run_specific_experiment(summary, model):
-    n_epochs = 5
-    batch_size = 128
-    learning_rate = 0.00005
-
-    model_name = "ViT"
-
-    summary.add_hparams({"learning rate": learning_rate,
+    summary.add_hparams({"model_name": model_name,
+                         "learning rate": learning_rate,
                          "batch size": batch_size,
-                         "max epochs": n_epochs}, {})
+                         "max epochs": nb_epochs}, {})
 
     out_folder = "saved_models/{}".format(model_name)
     if not path.exists(out_folder):
@@ -40,16 +34,8 @@ def run_specific_experiment(summary, model):
 
     save_file = "{}/best.model".format(out_folder)
 
-    train_transform = transforms.Compose([
-        transforms.RandomAffine(degrees=15, translate=(0.1, 0.1), scale=(0.9, 1.1)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))
-    ])
-    test_transform = transforms.Compose([transforms.ToTensor(),
-                                         transforms.Normalize((0.1307,), (0.3081,))])
-
-    train_set, test_set = get_mnist_sets(train_transform, test_transform)
-    # train_set, test_set = get_cifar10_sets(train_transform, test_transform)
+    train_set, test_set = get_mnist_sets()
+    # train_set, test_set = get_cifar10_sets()
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=4)
 
     if torch.cuda.is_available():
@@ -64,7 +50,7 @@ def run_specific_experiment(summary, model):
           criterion,
           None,
           batch_size,
-          n_epochs,
+          nb_epochs,
           True,
           summary,
           save_file,
@@ -82,7 +68,10 @@ def run_specific_experiment(summary, model):
 def main_mlp():
     summary = SummaryWriter()
     model = MLP(input_dim=28*28, hidden_size=500, out_size=10)
-    run_specific_experiment(summary, model)
+    nb_epochs = 5
+    batch_size = 128
+    learning_rate = 0.00005
+    run_specific_experiment(summary, model, nb_epochs, batch_size, learning_rate)
     summary.close()
 
 

@@ -36,16 +36,8 @@ def run_specific_experiment(summary, model):
 
     save_file = "{}/best.model".format(out_folder)
 
-    train_transform = transforms.Compose([
-        transforms.RandomAffine(degrees=15, translate=(0.1, 0.1), scale=(0.9, 1.1)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))
-    ])
-    test_transform = transforms.Compose([transforms.ToTensor(),
-                                         transforms.Normalize((0.1307,), (0.3081,))])
-
-    train_set, test_set = get_mnist_sets(train_transform, test_transform)
-    # train_set, test_set = get_cifar10_sets(train_transform, test_transform)
+    train_set, test_set = get_mnist_sets()
+    # train_set, test_set = get_cifar10_sets()
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=4)
 
     if torch.cuda.is_available():

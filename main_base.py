@@ -1,26 +1,22 @@
-import torch
-import torchvision
-from sklearn.metrics import classification_report, confusion_matrix
-from torch.utils.tensorboard import SummaryWriter
-import torch.nn as nn
-from torch import optim
-
 import os
 from os import path
 
 import numpy as np
-
-from torchvision import transforms
+import torch
+import torch.nn as nn
+from sklearn.metrics import classification_report, confusion_matrix
+from torch import optim
+from torch.utils.tensorboard import SummaryWriter
 
 from helpers.dataset_helpers import get_mnist_sets
 from helpers.metrics_helpers import arg_max_accuracy
 from models.mlp import MLP
-from models.vit import ViT
 from train_eval.eval import evaluate
 from train_eval.training import train
 
 
-def run_specific_experiment(summary, model, nb_epochs, batch_size, learning_rate):
+def run_specific_experiment(summary, model, datasets, nb_epochs, batch_size, learning_rate):
+    train_set, test_set = datasets
     model_name = model.__class__.__name__
 
     summary.add_hparams({"model_name": model_name,
@@ -34,8 +30,6 @@ def run_specific_experiment(summary, model, nb_epochs, batch_size, learning_rate
 
     save_file = "{}/best.model".format(out_folder)
 
-    train_set, test_set = get_mnist_sets()
-    # train_set, test_set = get_cifar10_sets()
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=4)
 
     if torch.cuda.is_available():
@@ -71,7 +65,8 @@ def main_mlp():
     nb_epochs = 5
     batch_size = 128
     learning_rate = 0.00005
-    run_specific_experiment(summary, model, nb_epochs, batch_size, learning_rate)
+    datasets = get_mnist_sets()
+    run_specific_experiment(summary, model, datasets, nb_epochs, batch_size, learning_rate)
     summary.close()
 
 

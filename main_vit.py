@@ -12,6 +12,7 @@ import numpy as np
 
 from torchvision import transforms
 
+from helpers.metrics_helpers import arg_max_accuracy
 from models.vit import ViT
 from train_eval.eval import evaluate
 from train_eval.training import train
@@ -78,7 +79,8 @@ def run_specific_experiment(summary, model):
           true_index=1)
     print('Finished Training')
 
-    y_pred, y_true, valid_loss = evaluate(model, test_loader, criterion)
+    metrics = {"loss": criterion, "acc": arg_max_accuracy}
+    y_pred, y_true, valid_loss = evaluate(model, test_loader, metrics)
     y_pred = np.array(y_pred).argmax(1)
     print(classification_report(y_true, y_pred))
     print(confusion_matrix(y_true, y_pred))

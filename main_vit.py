@@ -2,16 +2,19 @@ from torch.utils.tensorboard import SummaryWriter
 
 from common_training_setup import run_specific_experiment
 from helpers.dataset_helpers import get_mnist_sets
+from models.linear_embedding import LinearEmbedding
 from models.vit import ViT
 
 
 def main_vit():
     summary = SummaryWriter()
-    model = ViT(img_size=(1, 28, 28),
-                patch_size=(7,7),
-                patch_hidden_size=32,
+    patch_size = (7,7)
+    embedding_size = 32
+
+    embedding_layer = LinearEmbedding(patch_size=patch_size, embedding_size=embedding_size)
+    model = ViT(embedding_layer=embedding_layer,
+                img_size=(1, 28, 28),
                 nb_output=10,
-                group_channel=False,
                 nb_encoder_blocks=6,
                 nb_heads=4)
 

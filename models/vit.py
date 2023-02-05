@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 
 from models.encoder_block import EncoderBlock
-from models.to_patch import ToPatch
 
 
 class ViT(nn.Module):
@@ -16,8 +15,7 @@ class ViT(nn.Module):
 
         self.img_size = img_size
 
-        # create the patch and embedding layer
-        self.patch_layer = ToPatch(self.img_size, embedding_layer.patch_size)
+        # embedding layer
         self.embedding_layer = embedding_layer
 
         # determine patch count
@@ -42,11 +40,8 @@ class ViT(nn.Module):
         self.fc = nn.Linear(((self.patch_count + 1) * self.embedding_layer.embedding_size), nb_output)  # 400 is just to have something that will run
 
     def forward(self, x):
-        # Create Patches
-        patches = self.patch_layer(x)
-
         # Convert Patches to embeddings
-        embedding = self.embedding_layer(patches)
+        embedding = self.embedding_layer(x)
 
         # Add the v_class to the tokes
         embedding = torch.stack([torch.vstack((self.v_class, t)) for t in embedding])

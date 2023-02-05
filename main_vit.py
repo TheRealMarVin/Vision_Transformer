@@ -10,10 +10,13 @@ def main_vit():
     summary = SummaryWriter()
     patch_size = (7,7)
     embedding_size = 32
+    img_size = (1, 28, 28)
 
-    embedding_layer = LinearEmbedding(patch_size=patch_size, embedding_size=embedding_size)
+    embedding_layer = LinearEmbedding(img_size=img_size,
+                                      patch_size=patch_size,
+                                      embedding_size=embedding_size)
     model = ViT(embedding_layer=embedding_layer,
-                img_size=(1, 28, 28),
+                img_size=img_size,
                 nb_output=10,
                 nb_encoder_blocks=6,
                 nb_heads=4)

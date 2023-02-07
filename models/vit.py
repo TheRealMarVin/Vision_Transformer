@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from models.classifier import Classifier
 from models.encoder_block import EncoderBlock
 
 
@@ -27,6 +28,7 @@ class ViT(nn.Module):
 
         # v_class parameters
         self.v_class = nn.Parameter(torch.rand(1, self.embedding_layer.embedding_size))
+        self.classifier = Classifier(self.embedding_layer.embedding_size, nb_output)
 
         # Create encoder blocks
         encoder_list = []
@@ -34,7 +36,7 @@ class ViT(nn.Module):
             encoder_list.append(EncoderBlock(embedding_dim=self.embedding_layer.embedding_size,
                                              nb_embeddings=self.patch_count + 1,
                                              nb_heads=nb_heads,
-                                             hidden_size=self.embedding_layer.embedding_size * 4))
+                                             hidden_size=self.embedding_layer.embedding_size * 2))
 
         self.encoder_block = nn.ModuleList(encoder_list)
         self.fc = nn.Linear(((self.patch_count + 1) * self.embedding_layer.embedding_size), nb_output)  # 400 is just to have something that will run
@@ -53,9 +55,10 @@ class ViT(nn.Module):
         for encoder_block in self.encoder_block:
             encoder = encoder_block(encoder)
 
+        out = self.classifier(encoder)
         # just send to an FC and
-        out = encoder.view(encoder.shape[0], -1)
-        out = self.fc(out)
+        # out = encoder.view(encoder.shape[0], -1)
+        # out = self.fc(out)
 
         return out
 

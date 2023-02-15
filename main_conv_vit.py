@@ -18,11 +18,10 @@ def main_vit():
                 nb_encoder_blocks=6,
                 nb_heads=4)
 
-    nb_epochs = 30
-    batch_size = 128
-    learning_rate = 0.0005
+    print(model)
+    train_config_file = "config/training_params.ini"
     datasets = get_mnist_sets()
-    run_specific_experiment(summary, model, datasets, nb_epochs, batch_size, learning_rate)
+    run_specific_experiment(summary, model, datasets, train_config_file)
     summary.close()
 
 

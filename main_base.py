@@ -8,11 +8,9 @@ from models.mlp import MLP
 def main_mlp():
     summary = SummaryWriter()
     model = MLP(input_dim=28*28, hidden_size=500, out_size=10)
-    nb_epochs = 5
-    batch_size = 128
-    learning_rate = 0.00005
+    train_config_file = "config/training_params.ini"
     datasets = get_mnist_sets()
-    run_specific_experiment(summary, model, datasets, nb_epochs, batch_size, learning_rate)
+    run_specific_experiment(summary, model, datasets, train_config_file)
     summary.close()
 
 

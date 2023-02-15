@@ -1,4 +1,5 @@
 import os
+from configparser import ConfigParser
 from os import path
 
 import numpy as np
@@ -13,9 +14,16 @@ from train_eval.eval import evaluate
 from train_eval.training import train
 
 
-def run_specific_experiment(summary, model, datasets, nb_epochs, batch_size, learning_rate):
+def run_specific_experiment(summary, model, datasets, train_config_file):
     train_set, test_set = datasets
     model_name = model.__class__.__name__
+
+    train_config = ConfigParser()
+    train_config.read(train_config_file)
+
+    nb_epochs = train_config.getint("default", "nb_epochs")
+    batch_size = train_config.getint("default", "batch_size")
+    learning_rate = train_config.getfloat("default", "learning_rate")
 
     summary.add_hparams({"model_name": model_name,
                          "learning rate": learning_rate,
@@ -48,7 +56,7 @@ def run_specific_experiment(summary, model, datasets, nb_epochs, batch_size, lea
           save_file,
           early_stop=None,
           true_index=1)
-    print('Finished Training')
+    print("Finished Training")
 
     metrics = {"loss": criterion, "acc": arg_max_accuracy}
     y_pred, y_true, valid_loss = evaluate(model, test_loader, metrics)

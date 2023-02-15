@@ -34,12 +34,11 @@ class ViT(nn.Module):
         encoder_list = []
         for _ in range(nb_encoder_blocks):
             encoder_list.append(EncoderBlock(embedding_dim=self.embedding_layer.embedding_size,
-                                             nb_embeddings=self.patch_count + 1,
                                              nb_heads=nb_heads,
                                              hidden_size=self.embedding_layer.embedding_size * 2))
 
         self.encoder_block = nn.ModuleList(encoder_list)
-        self.fc = nn.Linear(((self.patch_count + 1) * self.embedding_layer.embedding_size), nb_output)  # 400 is just to have something that will run
+        # self.fc = nn.Linear(((self.patch_count + 1) * self.embedding_layer.embedding_size), nb_output)  # 400 is just to have something that will run
 
     def forward(self, x):
         # Convert Patches to embeddings

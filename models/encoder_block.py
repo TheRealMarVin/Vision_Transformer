@@ -4,7 +4,7 @@ from models.multi_head_self_attention import MultiHeadSelfAttention
 
 
 class EncoderBlock(nn.Module):
-    def __init__(self, embedding_dim, nb_embeddings, nb_heads, hidden_size):
+    def __init__(self, embedding_dim, nb_heads, hidden_size):
         super(EncoderBlock, self).__init__()
 
         # Input layer normalization

@@ -1,10 +1,4 @@
-import torch
 import torch.nn as nn
-import torch.nn.functional as  F
-
-import numpy as np
-
-import matplotlib.pyplot as plt
 
 from models.multi_head_self_attention import MultiHeadSelfAttention
 
@@ -30,12 +24,14 @@ class EncoderBlock(nn.Module):
 
     def forward(self, x):
         identity = x
-        x = self.layer_norm_1(x)
-        x = self.attention(x) + identity
 
-        x = self.layer_norm_2(x)
+        x = self.attention(x) + identity
+        x = self.layer_norm_1(x)
+
+        identity = x
         x = self.fc_1(x)
         x = self.activation(x)
-        x = self.fc_2(x)
+        x = self.fc_2(x) + identity
+        x = self.layer_norm_2(x)
 
         return x

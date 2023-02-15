@@ -6,7 +6,7 @@ class MLP(nn.Module):
         super(MLP, self).__init__()
         self.fc_1 = nn.Linear(input_dim, hidden_size)
         self.fc_2 = nn.Linear(hidden_size, out_size)
-        self.activation = nn.ReLU()
+        self.activation = nn.Tanh()
 
     def forward(self, x):
         x = x.view(x.shape[0], -1)

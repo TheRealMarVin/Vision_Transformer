@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 from sklearn.metrics import classification_report, confusion_matrix
 from torch import optim
+from torch.optim import lr_scheduler
 from torch.utils.tensorboard import SummaryWriter
 
 from helpers.metrics_helpers import arg_max_accuracy
@@ -43,12 +44,14 @@ def run_specific_experiment(summary, model, datasets, train_config_file):
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer)
+    scheduler = lr_scheduler.CosineAnnealingLR(optimizer, nb_epochs)
 
     train(model,
           train_set,
           optimizer,
           criterion,
-          None,
+          scheduler,
           batch_size,
           nb_epochs,
           True,

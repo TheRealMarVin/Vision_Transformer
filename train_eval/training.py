@@ -1,7 +1,8 @@
+import time
 from datetime import timedelta
 
 import torch
-import time
+from torch.optim import lr_scheduler
 
 from helpers.metrics_helpers import arg_max_accuracy
 from train_eval.eval import evaluate
@@ -24,7 +25,10 @@ def train(model, train_dataset, optimizer,
         train_metrics = train_epoch(model, train_iterator, optimizer, criterion, metrics, true_index=true_index)
         _, _, validation_metrics = evaluate(model, valid_iterator, metrics, true_index=true_index)
         if scheduler is not None:
-            scheduler.step(validation_metrics["loss"])
+            if type(scheduler) == lr_scheduler.ReduceLROnPlateau:
+                scheduler.step(validation_metrics["loss"])
+            else:
+                scheduler.step()
 
         end_time = time.time()
 

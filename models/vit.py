@@ -38,7 +38,6 @@ class ViT(nn.Module):
                                              hidden_size=self.embedding_layer.embedding_size * 2))
 
         self.encoder_block = nn.ModuleList(encoder_list)
-        # self.fc = nn.Linear(((self.patch_count + 1) * self.embedding_layer.embedding_size), nb_output)  # 400 is just to have something that will run
 
     def forward(self, x):
         # Convert Patches to embeddings
@@ -55,9 +54,6 @@ class ViT(nn.Module):
             encoder = encoder_block(encoder)
 
         out = self.classifier(encoder)
-        # just send to an FC and
-        # out = encoder.view(encoder.shape[0], -1)
-        # out = self.fc(out)
 
         return out
 

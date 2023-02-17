@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -25,6 +26,7 @@ class MultiHeadSelfAttention(nn.Module):
         value = torch.chunk(value, self.num_heads, dim=-1)
 
         attention_outputs = []
+        all_attention_scores = []
         for q, k, v in zip(query, key, value):
             # Compute dot product between query and key
             dot_product = torch.bmm(q, k.transpose(1,2))
@@ -32,12 +34,15 @@ class MultiHeadSelfAttention(nn.Module):
             # Scale dot product by square root of attention dim
             attention_weights = dot_product / (self.attention_dim ** 0.5)
 
-            # Apply softmax to compute attention scores
+            # Apply softmax to compute attention weights
             attention_scores = self.softmax(attention_weights)
+            all_attention_scores.append(attention_scores.detach().cpu().numpy())
 
             # Compute weighted sum of values
             attention_outputs.append(torch.bmm(attention_scores, v))
 
         # Concatenate attention outputs and project to attention_dim
         result = torch.cat(attention_outputs, dim=2)
-        return result
+        all_attention_scores = np.array(all_attention_scores)
+        all_attention_scores = np.moveaxis(all_attention_scores, 0, 1)
+        return result, all_attention_scores

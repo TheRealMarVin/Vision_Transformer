@@ -25,7 +25,8 @@ class EncoderBlock(nn.Module):
     def forward(self, x):
         identity = x
 
-        x = self.attention(x) + identity
+        x, _ = self.attention(x)
+        x = x + identity
         x = self.layer_norm_1(x)
 
         identity = x

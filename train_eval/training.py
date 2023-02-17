@@ -98,6 +98,6 @@ def log_metrics_in_tensorboard(summary, metrics, epoch, prefix):
 def metrics_to_string(metrics, prefix):
     res = []
     for k, val in metrics.items():
-        res.append("{} {}:{:.3f}".format(prefix, k, val))
+        res.append("{} {}:{:.4f}".format(prefix, k, val))
 
     return " ".join(res)

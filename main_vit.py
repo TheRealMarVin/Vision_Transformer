@@ -9,7 +9,7 @@ from models.vit import ViT
 def main_vit():
     summary = SummaryWriter()
     patch_size = (7,7)
-    embedding_size = 32
+    embedding_size = 64
     img_size = (1, 28, 28)
 
     embedding_layer = LinearEmbedding(img_size=img_size,

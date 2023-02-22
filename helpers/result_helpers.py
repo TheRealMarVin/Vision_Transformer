@@ -26,7 +26,8 @@ def display_gallery(images, title, nb_columns=3, nb_rows=3):
 
         for i in range(nb_rows):
             for j in range(nb_columns):
-                axis[i, j].imshow(images[page][i][j][0].transpose(1, 2, 0).squeeze())
+                tmp_img = np.transpose(images[page][i][j][0], (1, 2, 0))
+                axis[i, j].imshow(tmp_img.squeeze())
                 axis[i, j].title.set_text(images[page][i][j][1])
 
     plt.show()
@@ -58,20 +59,20 @@ def get_miss_classified(model, iterator, miss_classified_count, true_index=1):
             y_pred = y_pred.detach().cpu().numpy()
             y_true = y_true.detach().cpu().numpy()
 
-            res = np.flatnonzero(y_pred != y_true)
-            a = np.take(src, res)
-            b = np.take(y_pred, res)
-            c = np.take(y_true, res)
+            bad_classification_indexes = np.flatnonzero(y_pred.argmax(axis=1) != y_true)
+            bad_images = np.take(src, bad_classification_indexes, axis=0)
+            bad_prediction = np.take(y_pred.argmax(axis=1), bad_classification_indexes, axis=0)
+            bad_true_label = np.take(y_true, bad_classification_indexes, axis=0)
 
-            res = [(i, j, k) for i, j, k in zip(a,b,c)]
-            diff.extend(res)
+            new_pairs = [(i, "P:{} T:{}".format(j, k)) for i, j, k in zip(bad_images, bad_prediction, bad_true_label)]
+            diff.extend(new_pairs)
 
     return diff
 
 
 if __name__ == "__main__":
     print("Hello")
-    train_set, test_set = get_mnist_sets()
+    train_set, test_set, _ = get_mnist_sets()
 
     arr = []
     for i in range(9):

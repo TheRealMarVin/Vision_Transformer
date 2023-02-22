@@ -11,6 +11,7 @@ from torch.optim import lr_scheduler
 from torch.utils.tensorboard import SummaryWriter
 
 from helpers.metrics_helpers import arg_max_accuracy
+from helpers.result_helpers import get_miss_classified, display_gallery
 from train_eval.eval import evaluate
 from train_eval.training import train, metrics_to_string
 
@@ -64,6 +65,9 @@ def run_specific_experiment(summary, model, datasets, train_config_file):
     metrics = {"loss": criterion, "acc": arg_max_accuracy}
     y_pred, y_true, valid_loss = evaluate(model, test_loader, metrics)
     y_pred = np.array(y_pred).argmax(1)
+
+    bad_prediction_pairs = get_miss_classified(model, test_loader, 50)
+    display_gallery(bad_prediction_pairs, "Bad prediction", nb_columns=3, nb_rows=3)
     print(metrics_to_string(valid_loss, "test"))
     print(classification_report(y_true, y_pred, digits=4))
     print(confusion_matrix(y_true, y_pred))

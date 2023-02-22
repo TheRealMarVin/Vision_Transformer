@@ -22,8 +22,8 @@ def main_vit():
                 nb_heads=4)
 
     train_config_file = "config/training_params.ini"
-    datasets = get_mnist_sets()
-    run_specific_experiment(summary, model, datasets, train_config_file)
+    train_set, test_set, image_size = get_mnist_sets()
+    run_specific_experiment(summary, model, (train_set, test_set), train_config_file)
     summary.close()
 
 

@@ -33,7 +33,7 @@ class ViT(nn.Module):
         # Create encoder blocks
         encoder_list = []
         for _ in range(nb_encoder_blocks):
-            encoder_list.append(EncoderBlock(embedding_dim=self.embedding_layer.embedding_size,
+            encoder_list.append(EncoderBlock(input_dim=self.embedding_layer.embedding_size,
                                              nb_heads=nb_heads,
                                              hidden_size=self.embedding_layer.embedding_size * 2))
 

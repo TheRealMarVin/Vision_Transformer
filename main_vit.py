@@ -2,7 +2,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from common_training_setup import run_specific_experiment
 from helpers.dataset_helpers import get_mnist_sets
-from models.linear_embedding import LinearEmbedding
+from models.embeddings.linear_embedding import LinearEmbedding
 from models.vit import ViT
 
 

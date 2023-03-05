@@ -2,7 +2,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from common_training_setup import run_specific_experiment
 from helpers.dataset_helpers import get_mnist_sets
-from models.conv_embedding import ConvEmbedding
+from models.embeddings.conv_embedding import ConvEmbedding
 from models.vit import ViT
 
 

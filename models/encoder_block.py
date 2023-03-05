@@ -1,7 +1,6 @@
 import torch.nn as nn
 
-from models.multi_head_self_attention import MultiHeadSelfAttention
-from models.self_attention import SelfAttention
+from models.attention.multi_head_self_attention import MultiHeadSelfAttention
 
 
 class EncoderBlock(nn.Module):

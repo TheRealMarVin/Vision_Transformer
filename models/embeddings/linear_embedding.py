@@ -1,7 +1,7 @@
 import numpy as np
 import torch.nn as nn
 
-from models.to_patch import ToPatch
+from models.embeddings.to_patch import ToPatch
 
 
 class LinearEmbedding(nn.Module):

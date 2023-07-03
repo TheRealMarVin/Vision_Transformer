@@ -39,13 +39,19 @@ def evaluate(model, iterator, metrics_dict, true_index = 1):
 
             y_pred = model(src)
             for k, metric in metrics_dict.items():
-                metric_scores[k] += metric(y_pred, y_true)
+                curr_batch_metric = metric(y_pred.detach(), y_true.view(-1).detach())
+                metric_scores[k] += curr_batch_metric.item()
+                del curr_batch_metric
 
             if type(y_pred) is tuple:
                 y_pred, _ = y_pred
 
             all_pred.extend(y_pred.detach().cpu().numpy())
             all_true.extend(y_true.detach().cpu().numpy())
+
+            del y_pred
+            del src
+            del y_true
 
     for k, v in metric_scores.items():
         metric_scores[k] = v / len(iterator)

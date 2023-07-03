@@ -82,7 +82,12 @@ def train_epoch(model, iterator, optimizer, criterion, metrics_dict, true_index 
         optimizer.step()
 
         for k, metric in metrics_dict.items():
-            metric_scores[k] += metric(y_pred, y_true)
+            metric_scores[k] += metric(y_pred.detach(), y_true.view(-1).detach()).item()
+
+        del src
+        del loss
+        del y_pred
+        del y_true
 
     for k, v in metric_scores.items():
         metric_scores[k] = v / len(iterator)

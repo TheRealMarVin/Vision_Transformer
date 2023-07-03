@@ -3,6 +3,7 @@ from datetime import timedelta
 
 import torch
 from torch.optim import lr_scheduler
+from tqdm import tqdm
 
 from helpers.metrics_helpers import arg_max_accuracy
 from train_eval.eval import evaluate
@@ -61,7 +62,7 @@ def train_epoch(model, iterator, optimizer, criterion, metrics_dict, true_index 
 
     model.train()
 
-    for i, batch in enumerate(iterator):
+    for i, batch in tqdm(enumerate(iterator), total=len(iterator), desc="train", unit="epoch"):
         src = batch[0]
         y_true = batch[true_index]
 

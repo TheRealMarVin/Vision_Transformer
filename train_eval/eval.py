@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from tqdm import tqdm
 
 
 def reshape_prediction_for_compatibility(raw_output):
@@ -25,7 +26,7 @@ def evaluate(model, iterator, metrics_dict, true_index = 1):
         all_pred = []
         all_true = []
 
-        for i, batch in enumerate(iterator):
+        for i, batch in tqdm(enumerate(iterator), total=len(iterator), desc="eval", unit="epoch"):
             src = batch[0]
             y_true = batch[true_index]
 

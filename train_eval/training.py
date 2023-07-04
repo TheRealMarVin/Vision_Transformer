@@ -62,7 +62,7 @@ def train_epoch(model, iterator, optimizer, criterion, metrics_dict, true_index 
 
     model.train()
 
-    for i, batch in tqdm(enumerate(iterator), total=len(iterator), desc="train", unit="epoch"):
+    for i, batch in tqdm(enumerate(iterator), total=len(iterator), desc="train"):
         src = batch[0]
         y_true = batch[true_index]
 

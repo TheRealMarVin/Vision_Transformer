@@ -26,7 +26,7 @@ def evaluate(model, iterator, metrics_dict, true_index = 1):
         all_pred = []
         all_true = []
 
-        for i, batch in tqdm(enumerate(iterator), total=len(iterator), desc="eval", unit="epoch"):
+        for i, batch in tqdm(enumerate(iterator), total=len(iterator), desc="eval"):
             src = batch[0]
             y_true = batch[true_index]
 

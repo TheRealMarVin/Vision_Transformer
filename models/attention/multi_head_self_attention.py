@@ -1,48 +1,38 @@
-import numpy as np
 import torch
 import torch.nn as nn
 
 
 class MultiHeadSelfAttention(nn.Module):
-    def __init__(self, input_dim, embedding_dim, nb_heads):
-        super(MultiHeadSelfAttention, self).__init__()
-        self.input_dim = input_dim
-        self.attention_dim = embedding_dim
-        self.num_heads = nb_heads
-        self.query = nn.Linear(input_dim, embedding_dim)
-        self.key = nn.Linear(input_dim, embedding_dim)
-        self.value = nn.Linear(input_dim, embedding_dim)
-        self.softmax = nn.Softmax(dim=-1)
-        self.output = nn.Linear(embedding_dim * nb_heads, embedding_dim)
+    def __init__(self, embed_dim, num_heads):
+        super().__init__()
+        assert embed_dim % num_heads == 0, "embed_dim must be divisible by num_heads"
+        self.embed_dim = embed_dim
+        self.num_heads = num_heads
+        self.head_dim = embed_dim // num_heads
 
-    def forward(self, input):
-        query = self.query(input)
-        key = self.key(input)
-        value = self.value(input)
+        self.qkv = nn.Linear(embed_dim, 3 * embed_dim, bias=True)
+        self.proj = nn.Linear(embed_dim, embed_dim)
 
-        # Split into num_heads heads
-        query = torch.chunk(query, self.num_heads, dim=-1)
-        key = torch.chunk(key, self.num_heads, dim=-1)
-        value = torch.chunk(value, self.num_heads, dim=-1)
+    def forward(self, x, return_attn=False):
+        # x: (B, N, D)
+        B, N, D = x.shape
 
-        attention_outputs = []
-        all_attention_scores = []
-        for q, k, v in zip(query, key, value):
-            # Compute dot product between query and key
-            dot_product = torch.bmm(q, k.transpose(1,2))
+        qkv = self.qkv(x)
 
-            # Scale dot product by square root of attention dim
-            attention_weights = dot_product / (self.attention_dim ** 0.5)
+        # reshape into heads
+        qkv = qkv.reshape(B, N, 3, self.num_heads, self.head_dim)
+        qkv = qkv.permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[2]
 
-            # Apply softmax to compute attention weights
-            attention_scores = self.softmax(attention_weights)
-            all_attention_scores.append(attention_scores.detach().cpu().numpy())
+        attn_scores = torch.matmul(q, k.transpose(-2, -1))
+        attn_scores = attn_scores * (self.head_dim ** -0.5)
+        attn = attn_scores.softmax(dim=-1)
+        out = torch.matmul(attn, v)
 
-            # Compute weighted sum of values
-            attention_outputs.append(torch.bmm(attention_scores, v))
+        out = out.transpose(1, 2).reshape(B, N, D)
+        out = self.proj(out)
 
-        # Concatenate attention outputs and project to attention_dim
-        result = torch.cat(attention_outputs, dim=2)
-        all_attention_scores = np.array(all_attention_scores)
-        all_attention_scores = np.moveaxis(all_attention_scores, 0, 1)
-        return result, all_attention_scores
+        if return_attn:
+            return out, attn  # attn shape: (B, H, N, N)
+
+        return out

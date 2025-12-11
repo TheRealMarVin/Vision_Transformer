@@ -141,7 +141,8 @@ def evaluate_on_test_set(model, test_loader, criterion, nb_misclassified):
     y_pred, y_true, test_metrics = evaluate(model, test_loader, metrics)
     y_pred = np.array(y_pred).argmax(1)
 
-    bad_prediction_pairs = get_misclassified_samples(model, test_loader, nb_misclassified)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    bad_prediction_pairs = get_misclassified_samples(model, test_loader, nb_misclassified, device)
     images, captions = prepare_misclassified_for_gallery(bad_prediction_pairs)
     display_gallery(images, "Bad prediction", nb_columns=3, nb_rows=3, captions=captions)
 

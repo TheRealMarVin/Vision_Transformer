@@ -3,12 +3,12 @@ import torch.nn as nn
 
 
 class MultiHeadSelfAttention(nn.Module):
-    def __init__(self, embed_dim, num_heads):
+    def __init__(self, embed_dim, nb_heads):
         super().__init__()
-        assert embed_dim % num_heads == 0, "embed_dim must be divisible by num_heads"
+        assert embed_dim % nb_heads == 0, "embed_dim must be divisible by nb_heads"
         self.embed_dim = embed_dim
-        self.num_heads = num_heads
-        self.head_dim = embed_dim // num_heads
+        self.nb_heads = nb_heads
+        self.head_dim = embed_dim // nb_heads
 
         self.qkv = nn.Linear(embed_dim, 3 * embed_dim, bias=True)
         self.proj = nn.Linear(embed_dim, embed_dim)
@@ -20,7 +20,7 @@ class MultiHeadSelfAttention(nn.Module):
         qkv = self.qkv(x)
 
         # reshape into heads
-        qkv = qkv.reshape(B, N, 3, self.num_heads, self.head_dim)
+        qkv = qkv.reshape(B, N, 3, self.nb_heads, self.head_dim)
         qkv = qkv.permute(2, 0, 3, 1, 4)
         q, k, v = qkv[0], qkv[1], qkv[2]
 
@@ -35,4 +35,4 @@ class MultiHeadSelfAttention(nn.Module):
         if return_attn:
             return out, attn  # attn shape: (B, H, N, N)
 
-        return out
+        return out, None

@@ -3,7 +3,7 @@ from torch.utils.tensorboard import SummaryWriter
 from common_training_setup import run_specific_experiment
 from helpers.dataset_helpers import get_mnist_sets
 from models.embeddings.conv_embedding import ConvEmbedding
-from models.vit import ViT
+from models.vision_transformer_classifier import ViTClassifier
 
 
 def main_vit():
@@ -12,11 +12,8 @@ def main_vit():
     embedding_size = 64
 
     embedding_layer = ConvEmbedding(1, patch_size=patch_size, embedding_size=embedding_size)
-    model = ViT(embedding_layer=embedding_layer,
-                img_size=(1, 28, 28),
-                nb_output=10,
-                nb_encoder_blocks=6,
-                nb_heads=4)
+    model = ViTClassifier(embedding_layer=embedding_layer, img_size=(1, 28, 28),
+                          nb_output=10, nb_encoder_blocks=6, nb_heads=4)
 
     print(model)
     train_config_file = "config/training_params.ini"

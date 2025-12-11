@@ -5,80 +5,73 @@ import torch
 from helpers.dataset_helpers import get_mnist_sets
 
 
-def display_gallery(images, title, nb_columns=3, nb_rows=3):
+def display_gallery(images, title, nb_columns=3, nb_rows=3, captions=None):
     nb_images = len(images)
-    nb_pages = nb_images // (nb_columns * nb_rows)
-    if nb_images % (nb_columns * nb_rows) != 0:
+    per_page = nb_columns * nb_rows
+    nb_pages = nb_images // per_page
+    if nb_images % per_page != 0:
         nb_pages += 1
-
-    maximum = nb_pages * nb_columns * nb_rows
-    if nb_images < maximum:
-        rest = maximum - nb_images
-        padding = [(np.zeros_like(images[0][0]), "None") for i in range(rest)]
-        images.extend(padding)
-
-    images = np.array(images)
-    images = images.reshape(nb_pages, nb_rows, nb_columns, 2)
 
     for page in range(nb_pages):
         fig, axis = plt.subplots(nb_rows, nb_columns)
         fig.suptitle("page: {} - {}".format(page + 1, title))
 
+        axis = np.atleast_2d(axis)
+
         for i in range(nb_rows):
             for j in range(nb_columns):
-                tmp_img = np.transpose(images[page][i][j][0], (1, 2, 0))
-                axis[i, j].imshow(tmp_img.squeeze())
-                axis[i, j].title.set_text(images[page][i][j][1])
+                idx = page * per_page + i * nb_columns + j
+                ax = axis[i, j]
+
+                if idx >= nb_images:
+                    ax.axis("off")
+                    continue
+
+                img = images[idx]
+                tmp_img = np.transpose(img, (1, 2, 0))
+                ax.imshow(tmp_img.squeeze())
+
+                if captions and idx < len(captions):
+                    ax.set_xlabel(captions[idx])
 
     plt.show()
 
 
-def get_miss_classified(model, iterator, miss_classified_count, true_index=1):
+def get_misclassified_samples(model, iterator, max_count, device, input_index=0, target_index=1):
     model.eval()
-
-    diff = []
+    misclassified = []
 
     with torch.no_grad():
-        for i, batch in enumerate(iterator):
-            src = batch[0]
-            y_true = batch[true_index]
+        for batch in iterator:
+            x = batch[input_index].to(device)
+            y_true = batch[target_index].to(device)
 
-            if len(y_true.shape) == 1:
-                y_true = y_true.type('torch.LongTensor')
+            y_pred = model(x)
+            if isinstance(y_pred, tuple):
+                y_pred = y_pred[0]
 
-            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-            if device.type == 'cuda':
-                src = src.cuda()
-                y_true = y_true.cuda()
+            pred_labels = y_pred.argmax(dim=1)
+            mis_mask = pred_labels != y_true
 
-            y_pred = model(src)
+            if mis_mask.any():
+                mis_x = x[mis_mask].cpu()
+                mis_pred = pred_labels[mis_mask].cpu()
+                mis_true = y_true[mis_mask].cpu()
 
-            if type(y_pred) is tuple:
-                y_pred, _ = y_pred
+                for sample, p, t in zip(mis_x, mis_pred, mis_true):
+                    misclassified.append((sample, int(p), int(t)))
+                    if len(misclassified) >= max_count:
+                        return misclassified
 
-            y_pred = y_pred.detach().cpu().numpy()
-            y_true = y_true.detach().cpu().numpy()
-
-            bad_classification_indexes = np.flatnonzero(y_pred.argmax(axis=1) != y_true)
-            bad_images = np.take(src, bad_classification_indexes, axis=0)
-            bad_prediction = np.take(y_pred.argmax(axis=1), bad_classification_indexes, axis=0)
-            bad_true_label = np.take(y_true, bad_classification_indexes, axis=0)
-
-            new_pairs = [(i, "P:{} T:{}".format(j, k)) for i, j, k in zip(bad_images, bad_prediction, bad_true_label)]
-            diff.extend(new_pairs)
-
-    return diff
+    return misclassified
 
 
-if __name__ == "__main__":
-    print("Hello")
-    train_set, test_set, _ = get_mnist_sets()
+def prepare_misclassified_for_gallery(misclassified_samples):
+    preds = []
+    captions = []
 
-    arr = []
-    for i in range(9):
-        tmp = test_set[int(i)]
-        tmp = (tmp[0].detach().cpu().numpy(), tmp[1])
-        arr.append(tmp)
+    for sample, pred, true in misclassified_samples:
+        preds.append(sample)
+        captions.append("P:{} T:{}".format(pred, true))
 
-    display_gallery(arr, "bob", 3, 2)
-    print("Done")
+    return preds, captions

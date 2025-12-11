@@ -21,10 +21,15 @@ def display_gallery(images, title, nb_columns=3, nb_rows=3, captions=None):
         for i in range(nb_rows):
             for j in range(nb_columns):
                 idx = page * per_page + i * nb_columns + j
+
                 ax = axis[i, j]
+                ax.set_xticks([])
+                ax.set_yticks([])
+                for spine in ax.spines.values():
+                    spine.set_visible(False)
 
                 if idx >= nb_images:
-                    ax.axis("off")
+                    ax.set_xlabel("")
                     continue
 
                 img = images[idx]
@@ -34,7 +39,9 @@ def display_gallery(images, title, nb_columns=3, nb_rows=3, captions=None):
                 if captions and idx < len(captions):
                     ax.set_xlabel(captions[idx])
 
-    plt.show()
+        plt.tight_layout()
+        plt.show()
+
 
 
 def get_misclassified_samples(model, iterator, max_count, device, input_index=0, target_index=1):

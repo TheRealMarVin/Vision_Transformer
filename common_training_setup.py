@@ -54,7 +54,7 @@ def load_training_config(train_config_file):
     if config.has_option(section, "nb_misclassified"):
         nb_misclassified = config.getint(section, "nb_misclassified")
     else:
-        nb_misclassified = 50
+        nb_misclassified = 18
 
     config_values = {
         "nb_epochs": nb_epochs,

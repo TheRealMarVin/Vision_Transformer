@@ -9,7 +9,7 @@ from tqdm import tqdm
 from train_eval.eval import evaluate
 
 
-DEFAULT_nb_WORKERS = 4
+DEFAULT_NB_WORKERS = 4
 
 
 def train(
@@ -27,7 +27,7 @@ def train(
     train_ratio=0.85,
     true_index=1,
     device=None,
-    nb_workers=DEFAULT_nb_WORKERS,
+    nb_workers=DEFAULT_NB_WORKERS,
     resplit_validation_each_epoch=False,
     fixed_split_seed=None
 ):

@@ -3,18 +3,19 @@ import torch.nn as nn
 
 
 class MultiHeadSelfAttention(nn.Module):
-    def __init__(self, embed_dim, nb_heads):
+    def __init__(self, embedding_dim, nb_heads, attention_dropout=0.0, proj_dropout=0.0):
         super().__init__()
-        assert embed_dim % nb_heads == 0, "embed_dim must be divisible by nb_heads"
-        self.embed_dim = embed_dim
+        assert embedding_dim % nb_heads == 0, "embed_dim must be divisible by nb_heads"
+        self.embedding_dim = embedding_dim
         self.nb_heads = nb_heads
-        self.head_dim = embed_dim // nb_heads
+        self.head_dim = embedding_dim // nb_heads
 
-        self.qkv = nn.Linear(embed_dim, 3 * embed_dim, bias=True)
-        self.proj = nn.Linear(embed_dim, embed_dim)
+        self.attention_dropout = nn.Dropout(attention_dropout)
+        self.qkv = nn.Linear(embedding_dim, 3 * embedding_dim, bias=True)
+        self.proj_dropout = nn.Dropout(proj_dropout)
+        self.proj = nn.Linear(embedding_dim, embedding_dim)
 
     def forward(self, x, return_attn=False):
-        # x: (B, N, D)
         B, N, D = x.shape
 
         qkv = self.qkv(x)
@@ -24,15 +25,18 @@ class MultiHeadSelfAttention(nn.Module):
         qkv = qkv.permute(2, 0, 3, 1, 4)
         q, k, v = qkv[0], qkv[1], qkv[2]
 
-        attn_scores = torch.matmul(q, k.transpose(-2, -1))
-        attn_scores = attn_scores * (self.head_dim ** -0.5)
-        attn = attn_scores.softmax(dim=-1)
-        out = torch.matmul(attn, v)
+        attention_scores = torch.matmul(q, k.transpose(-2, -1))
+        attention_scores = attention_scores * (self.head_dim ** -0.5)
+
+        attention = attention_scores.softmax(dim=-1)
+        attention = self.attention_dropout(attention)
+        out = torch.matmul(attention, v)
 
         out = out.transpose(1, 2).reshape(B, N, D)
         out = self.proj(out)
+        out = self.proj_dropout(out)
 
         if return_attn:
-            return out, attn  # attn shape: (B, H, N, N)
+            return out, attention
 
         return out, None

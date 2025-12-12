@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from models.transformer_encoder_block import TransformerEncoderBlock
-from models.utils import build_sinusoidal_positional_encoding
+from models.positional_encoding import build_sinusoidal_positional_encoding
 
 
 class VisionTransformer(nn.Module):
@@ -55,7 +55,6 @@ class VisionTransformer(nn.Module):
         else:
             tokens = embedding
 
-        # Add positional embeddings (broadcast over batch)
         tokens = tokens + self.positional_embeddings[:, :tokens.size(1), :]
 
         encoder = tokens

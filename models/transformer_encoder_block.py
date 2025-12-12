@@ -10,7 +10,7 @@ class TransformerEncoderBlock(nn.Module):
         embed_dim,
         nb_heads,
         mlp_ratio = 4.0,
-        attn_dropout = 0.0,
+        attention_dropout = 0.0,
         proj_dropout = 0.0,
         mlp_dropout = 0.0,
         drop_path = 0.0,
@@ -19,8 +19,10 @@ class TransformerEncoderBlock(nn.Module):
 
         self.norm1 = nn.LayerNorm(embed_dim)
         self.attn = MultiHeadSelfAttention(
-            embed_dim=embed_dim,
-            nb_heads=nb_heads
+            embedding_dim=embed_dim,
+            nb_heads=nb_heads,
+            attention_dropout=attention_dropout,
+            proj_dropout=proj_dropout
         )
 
         self.norm2 = nn.LayerNorm(embed_dim)

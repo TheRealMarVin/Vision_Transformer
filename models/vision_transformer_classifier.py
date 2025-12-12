@@ -20,6 +20,6 @@ class ViTClassifier(nn.Module):
         self.classifier = Classifier(embedding_dim, nb_output)
 
     def forward(self, x):
-        encoder = self.backbone(x)   # (B, N+1, D)
-        class_token = encoder[:, 0]  # (B, D)
+        encoder = self.backbone(x)
+        class_token = encoder[:, 0]
         return self.classifier(class_token)

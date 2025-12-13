@@ -65,4 +65,4 @@ def get_stl10_sets():
         transform=transform_test
     )
 
-    return train_set, test_set, image_resolution
+    return train_dataset, test_dataset, image_resolution

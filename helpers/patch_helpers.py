@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 @torch.no_grad()
 def test_patch_order(img, patches, patch_size):
-    C, H, W = img[0].shape
+    C, H, W = img.shape
     ph, pw = patch_size
     gh = H // ph
     gw = W // pw

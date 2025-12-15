@@ -18,8 +18,8 @@ class LinearEmbedding(nn.Module):
     def forward(self, img):
         x = self.patch_layer(img)
 
-        # test_patch_order(img=img[0], patches=x[0], patch_size=self.patch_layer.patch_size)
-        # debug_show_image_and_patches(img, x, self.patch_size, title="patch debug")
+        test_patch_order(img=img[0], patches=x[0], patch_size=self.patch_layer.patch_size)
+        debug_show_image_and_patches(img, x, self.patch_size, title="patch debug")
 
         x = x.view(x.shape[0], x.shape[1], -1)
         x = self.fc_1(x)

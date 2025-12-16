@@ -13,6 +13,6 @@ class ConvEmbedding(nn.Module):
     def forward(self, x):
         x = self.conv_1(x)
         x = x.view(x.shape[0], x.shape[1], -1)
-        # need to transpose because x.shape[1] is the embedding size (out channels) and x.shape[2] is the patch count
+
         x = x.transpose(1, 2)
         return x

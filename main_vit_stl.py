@@ -15,7 +15,7 @@ def main_vit():
     embedding_layer = LinearEmbedding(img_size=img_size,
                                       patch_size=patch_size,
                                       embedding_size=embedding_size)
-    model = ViTClassifier(embedding_layer=embedding_layer, img_size=img_size,
+    model = ViTClassifier(embedding_layer=embedding_layer, image_size=img_size,
                           nb_output=10, nb_encoder_blocks=6, nb_heads=4)
 
     train_config_file = "config/training_params.ini"

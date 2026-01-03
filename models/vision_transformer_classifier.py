@@ -1,4 +1,5 @@
 import torch.nn as nn
+from pyglet import image
 
 from models.classifier import Classifier
 from models.vision_transformer import VisionTransformer
@@ -6,13 +7,13 @@ from models.vision_transformer import VisionTransformer
 
 class ViTClassifier(nn.Module):
     def __init__(self, embedding_layer,
-                img_size,
-                nb_output=10,
-                nb_encoder_blocks=6,
-                nb_heads=4):
+                 image_size,
+                 nb_output=10,
+                 nb_encoder_blocks=6,
+                 nb_heads=4):
         super(ViTClassifier, self).__init__()
         self.backbone = VisionTransformer(embedding_layer=embedding_layer,
-                                          img_size=img_size,
+                                          image_size=image_size,
                                           nb_encoder_blocks=nb_encoder_blocks,
                                           nb_heads=nb_heads,
                                           use_class_token=False)
@@ -21,5 +22,5 @@ class ViTClassifier(nn.Module):
 
     def forward(self, x):
         encoder = self.backbone(x)
-        class_token = encoder[:, 0]
+        class_token = encoder.mean(dim=1)
         return self.classifier(class_token)

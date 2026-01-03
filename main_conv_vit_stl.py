@@ -12,7 +12,7 @@ def main_vit():
     embedding_size = 64
 
     embedding_layer = ConvEmbedding(3, patch_size=patch_size, embedding_size=embedding_size)
-    model = ViTClassifier(embedding_layer=embedding_layer, img_size=(3, 96, 96),
+    model = ViTClassifier(embedding_layer=embedding_layer, image_size=(3, 96, 96),
                           nb_output=10, nb_encoder_blocks=6, nb_heads=4)
 
     print(model)

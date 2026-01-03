@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 class MultiHeadSelfAttention(nn.Module):
-    def __init__(self, embedding_dim, nb_heads, attention_dropout=0.0, proj_dropout=0.0):
+    def __init__(self, embedding_dim, nb_heads, attention_dropout=0.0, projection_dropout=0.0):
         super().__init__()
         assert embedding_dim % nb_heads == 0, "embed_dim must be divisible by nb_heads"
         self.embedding_dim = embedding_dim
@@ -12,7 +12,7 @@ class MultiHeadSelfAttention(nn.Module):
 
         self.attention_dropout = nn.Dropout(attention_dropout)
         self.qkv = nn.Linear(embedding_dim, 3 * embedding_dim, bias=True)
-        self.proj_dropout = nn.Dropout(proj_dropout)
+        self.proj_dropout = nn.Dropout(projection_dropout)
         self.proj = nn.Linear(embedding_dim, embedding_dim)
 
     def forward(self, x, return_attn=False):
